@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timestamp Generator</title>
+    <!-- Memuat font Poppins dari Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #121212;
+            --surface-dark: #1e1e1e;
+            --primary-blue: #3a78d1;
+            --primary-blue-hover: #4a89e0;
+            --primary-green: #3aa354;
+            --primary-green-hover: #4bc468;
+            --text-light: #e0e0e0;
+            --text-secondary: #a0a0a0;
+            --border-color: #333333;
+        }
+
+        body {
+            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .container {
+            background-color: var(--surface-dark);
+            padding: 30px 35px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 550px;
+            border: 1px solid var(--border-color);
+        }
+        h1 {
+            text-align: center;
+            color: var(--text-light);
+            margin-bottom: 25px;
+            font-weight: 600;
+        }
+        .form-group {
+            margin-bottom: 25px;
+        }
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+        input[type="text"],
+        input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            background-color: #2c2c2c;
+            color: var(--text-light);
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 16px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(58, 120, 209, 0.3);
+        }
+        input[type="file"] {
+            padding: 8px;
+            cursor: pointer;
+        }
+        input[type="file"]::-webkit-file-upload-button {
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        input[type="file"]::-webkit-file-upload-button:hover {
+            background: var(--primary-blue-hover);
+        }
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .btn {
+            width: 100%;
+            padding: 14px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #fff;
+            background-color: var(--primary-blue);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            margin-top: 10px;
+        }
+        .btn:hover {
+            background-color: var(--primary-blue-hover);
+        }
+        .btn:active {
+            transform: scale(0.98);
+        }
+        .output-area {
+            margin-top: 30px;
+            text-align: center;
+            display: none;
+        }
+        #resultImage {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+        }
+        .download-btn {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 12px 25px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #fff;
+            background-color: var(--primary-green);
+            border-radius: 8px;
+            text-decoration: none;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+        .download-btn:hover {
+            background-color: var(--primary-green-hover);
+        }
+        .download-btn:active {
+            transform: scale(0.98);
+        }
+        canvas {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Timestamp Generator</h1>
+        
+        <div class="form-group">
+            <label for="imageLoader">1. Pilih Gambar</label>
+            <input type="file" id="imageLoader" name="imageLoader" accept="image/*">
+        </div>
+        
+        <div class="form-group">
+            <label>Watermark</label>
+            <div class="options-grid">
+                <input type="text" id="line1Input" value="POCO X3 NFC | LEICA">
+                <input type="text" id="line2Input" value="AHMAD SHODIQIN">
+            </div>
+        </div>
+
+        <button id="processBtn" class="btn">Buat TimeStamp</button>
+
+        <div id="outputArea" class="output-area">
+            <h2>Hasil Gambar</h2>
+            <img id="resultImage" src="" alt="Gambar dengan stempel waktu">
+            <a id="downloadLink" href="#" class="download-btn" download="gambar-dengan-timestamp.png">Unduh Gambar</a>
+        </div>
+    </div>
+
+    <canvas id="imageCanvas"></canvas>
+
+    <script>
+        // --- Element References ---
+        const imageLoader = document.getElementById('imageLoader');
+        const line1Input = document.getElementById('line1Input');
+        const line2Input = document.getElementById('line2Input');
+        const processBtn = document.getElementById('processBtn');
+        const canvas = document.getElementById('imageCanvas');
+        const ctx = canvas.getContext('2d');
+        const outputArea = document.getElementById('outputArea');
+        const resultImage = document.getElementById('resultImage');
+        const downloadLink = document.getElementById('downloadLink');
+
+        // --- Main Function ---
+        function applyTimestamp() {
+            const file = imageLoader.files[0];
+            if (!file) {
+                alert("Harap pilih file gambar terlebih dahulu!");
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    // --- Get User & Auto-generated Text ---
+                    const line1Text = line1Input.value;
+                    const line2Text = line2Input.value;
+                    
+                    const now = new Date();
+                    const day = String(now.getDate()).padStart(2, '0');
+                    const month = String(now.getMonth() + 1).padStart(2, '0');
+                    const year = String(now.getFullYear()).slice(-2);
+                    const hours = String(now.getHours()).padStart(2, '0');
+                    const minutes = String(now.getMinutes()).padStart(2, '0');
+                    const dateTimeText = `${day}/${month}/${year} | ${hours}.${minutes}`;
+
+                    // --- Setup Canvas & Font ---
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    ctx.drawImage(img, 0, 0);
+
+                    const fontSize = Math.floor(img.width / 40); // Sedikit lebih kecil agar lebih elegan
+                    const padding = fontSize * 1.5;
+                    ctx.font = `${fontSize}px Poppins, Arial, sans-serif`;
+                    const fontColor = '#FFFFFF';
+                    ctx.fillStyle = fontColor;
+                    
+                    // Menambahkan bayangan halus agar teks lebih terbaca
+                    ctx.shadowColor = 'rgba(0, 0, 0, 0.7)';
+                    ctx.shadowBlur = 5;
+                    ctx.shadowOffsetX = 2;
+                    ctx.shadowOffsetY = 2;
+
+                    // --- 1. Draw Left Bottom Text ---
+                    ctx.textAlign = 'left';
+                    ctx.textBaseline = 'bottom';
+                    const xLeft = padding;
+                    const yLeft = canvas.height - padding;
+                    
+                    ctx.fillText(line2Text, xLeft, yLeft);
+                    ctx.fillText(line1Text, xLeft, yLeft - fontSize * 1.2);
+
+
+                    // --- 2. Draw Right Bottom Text (Date/Time) ---
+                    ctx.textAlign = 'right';
+                    ctx.textBaseline = 'bottom';
+                    const xRight = canvas.width - padding;
+                    const yRight = canvas.height - padding;
+
+                    ctx.fillText(dateTimeText, xRight, yRight);
+
+
+                    // --- Display Result ---
+                    const finalImageURL = canvas.toDataURL('image/png');
+                    resultImage.src = finalImageURL;
+                    downloadLink.href = finalImageURL;
+                    outputArea.style.display = 'block';
+                }
+                img.src = event.target.result;
+            }
+            reader.readAsDataURL(file);
+        }
+
+        // --- Event Listener ---
+        processBtn.addEventListener('click', applyTimestamp);
+
+    </script>
+
+</body>
+</html>
